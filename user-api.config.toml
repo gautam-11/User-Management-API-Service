@@ -1,0 +1,4 @@
+PORT=3000 
+[Mongo]
+  URL = "localhost:27017"
+  DBName = "DataX"
