@@ -5,9 +5,10 @@ import (
 	"log"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/globalsign/mgo"
 	"github.com/spf13/viper"
+	mgo "gopkg.in/mgo.v2"
 )
+
 type Constants struct {
 	PORT  string
 	Mongo struct {
@@ -32,7 +33,7 @@ func EnvPort() (*Config, error) {
 
 }
 
-// NewConfig is used to generate a configuration instance which will be passed around the codebase
+// Connect() is used to establish a database connection to mongodb
 func Connect() (*Config, error) {
 	config := Config{}
 	constants, err := initViper()
@@ -45,6 +46,7 @@ func Connect() (*Config, error) {
 		return &config, err
 	}
 	config.Database = dbSession.DB(config.Constants.Mongo.DBName)
+	fmt.Println("Connected to database!!")
 	return &config, err
 }
 
