@@ -1,7 +1,9 @@
 package utils
 
 type UserJson struct {
-	Email string
-	Phone string
-	Msg   string
+	FirstName string
+	LastName  string
+	Email     string
+	Phone     string
+	Msg       string
 }

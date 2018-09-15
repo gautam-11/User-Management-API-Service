@@ -13,9 +13,11 @@ import (
 func UserRoutes() *chi.Mux {
 	router := chi.NewRouter()
 
+	//Root path testing
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to User management api service"))
 	})
+
 	//Handler for handling registration of user
 	router.Post("/register", func(w http.ResponseWriter, r *http.Request) {
 		payload := schemas.User{}
@@ -32,11 +34,58 @@ func UserRoutes() *chi.Mux {
 			respondWithJSON(w, 200, user)
 		}
 	})
-	/*
-		router.Post("/login", modules.LoginUser)
-		router.Get("/getusers", modules.GetUsers)
-		router.Get("/getuser/{id}", modules.GetUser)
-	*/
+
+	//Handler for getting users by their mailid
+	router.Get("/getuser/{email}", func(w http.ResponseWriter, r *http.Request) {
+
+		userid := chi.URLParam(r, "email")
+		user, err := modules.GetUserById(userid)
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+		} else {
+			respondWithJSON(w, 200, user)
+		}
+	})
+	//Handler for fetching all users
+	router.Get("/getusers", func(w http.ResponseWriter, r *http.Request) {
+
+		users, err := modules.GetUsers()
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+		} else {
+			respondWithJSON(w, 200, users)
+		}
+	})
+	//Handling for deleting user using mailid
+	router.Delete("/{email}", func(w http.ResponseWriter, r *http.Request) {
+		userid := chi.URLParam(r, "email")
+		msg, err := modules.DeleteUser(userid)
+
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+		} else {
+			respondWithJSON(w, 200, msg)
+		}
+	})
+	router.Put("/{email}", func(w http.ResponseWriter, r *http.Request) {
+
+		payload := schemas.User{}
+		json.NewDecoder(r.Body).Decode(&payload)
+		err := middlewares.Validate(&payload)
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+			return
+		}
+		userid := chi.URLParam(r, "email")
+		msg, err := modules.UpdateUser(userid, &payload)
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+		} else {
+			respondWithJSON(w, 200, msg)
+		}
+
+	})
+
 	return router
 }
 

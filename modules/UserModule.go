@@ -17,6 +17,7 @@ func RegisterUser(payload *schemas.User) (utils.UserJson, error) {
 	if err != nil {
 		log.Panicln("Configuration error", err)
 	}
+	defer db.Session.Close()
 
 	var result schemas.User
 	err = db.Database.C("users").Find(bson.M{"$or": []bson.M{bson.M{"email": payload.Email}, bson.M{"phone": payload.Phone}}}).One(&result)
@@ -31,7 +32,78 @@ func RegisterUser(payload *schemas.User) (utils.UserJson, error) {
 		return utils.UserJson{}, err
 	}
 
-	resp := utils.UserJson{payload.Email, payload.Phone, "User Registered successfully"}
+	resp := utils.UserJson{payload.FirstName, payload.LastName, payload.Email, payload.Phone, "User Registered successfully"}
 
 	return resp, err
+}
+
+//Search for User using mailid / phone
+
+func GetUserById(email string) (utils.UserJson, error) {
+	db, err := config.Connect()
+	if err != nil {
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+	var result schemas.User
+	err = db.Database.C("users").Find(bson.M{"email": email}).One(&result)
+
+	if err != nil {
+		return utils.UserJson{}, errors.New("User not found!!")
+	}
+	resp := utils.UserJson{result.FirstName, result.LastName, result.Email, result.Phone, "Fetched user successfully"}
+	return resp, err
+
+}
+
+//Fetch all users
+
+func GetUsers() ([]schemas.User, error) {
+	db, err := config.Connect()
+	if err != nil {
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+	var results []schemas.User
+	err = db.Database.C("users").Find(bson.M{}).Select(bson.M{"password": 0, "_id": 0}).All(&results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+
+}
+
+// Delete user using mailid
+func DeleteUser(email string) (string, error) {
+	db, err := config.Connect()
+	if err != nil {
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+	err = db.Database.C("users").Remove(bson.M{"email": email})
+	if err != nil {
+		return "", err
+	}
+
+	return "Deleted user successfully", nil
+}
+
+//Update user using mailid
+
+func UpdateUser(email string, payload *schemas.User) (string, error) {
+	db, err := config.Connect()
+	if err != nil {
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+
+	payload.UpdatedAt = time.Now()
+	err = db.Database.C("users").Update(bson.M{"email": email}, payload)
+	if err != nil {
+		return "", err
+	}
+
+	return "Updated user successfully", nil
+
 }

@@ -19,6 +19,7 @@ type Constants struct {
 
 type Config struct {
 	Constants
+	Session  *mgo.Session
 	Database *mgo.Database
 }
 
@@ -45,7 +46,9 @@ func Connect() (*Config, error) {
 	if err != nil {
 		return &config, err
 	}
+	config.Session = dbSession
 	config.Database = dbSession.DB(config.Constants.Mongo.DBName)
+
 	fmt.Println("Connected to database!!")
 	return &config, err
 }
