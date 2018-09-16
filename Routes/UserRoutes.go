@@ -12,12 +12,24 @@ import (
 
 func UserRoutes() *chi.Mux {
 	router := chi.NewRouter()
+	router.Use(middlewares.JwtAuthentication)
+	//Handler for login
+	router.Post("/login", func(w http.ResponseWriter, r *http.Request) {
+		credentials := schemas.LoginUser{}
+		json.NewDecoder(r.Body).Decode(&credentials)
+		err := middlewares.LoginValidate(&credentials)
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+			return
+		}
+		token, err := modules.LoginUser(&credentials)
+		if err != nil {
+			respondWithError(w, 400, err.Error())
+		} else {
+			respondWithJSON(w, 200, token)
+		}
 
-	//Root path testing
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to User management api service"))
 	})
-
 	//Handler for handling registration of user
 	router.Post("/register", func(w http.ResponseWriter, r *http.Request) {
 		payload := schemas.User{}

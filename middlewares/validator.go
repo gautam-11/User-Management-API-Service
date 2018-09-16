@@ -26,3 +26,14 @@ func Validate(user *schemas.User) error {
 	return err
 
 }
+
+//Validate Login Credentials
+func LoginValidate(user *schemas.LoginUser) error {
+
+	err := validation.Errors{
+		"email":    validation.Validate(user.Email, validation.Required, is.Email),
+		"password": validation.Validate(user.Password, validation.Required),
+	}.Filter()
+
+	return err
+}

@@ -37,6 +37,33 @@ func RegisterUser(payload *schemas.User) (utils.UserJson, error) {
 	return resp, err
 }
 
+//Login User DB connection login
+
+func LoginUser(credentials *schemas.LoginUser) (string, error) {
+	db, err := config.Connect()
+	if err != nil {
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+
+	var result *schemas.User
+
+	err = db.Database.C("users").Find(bson.M{"email": credentials.Email}).One(&result)
+
+	if err != nil {
+		return "", errors.New("User not found!!")
+	}
+	if !(utils.CheckHashedPassword(result.Password, credentials.Password)) {
+		return "", errors.New("Invalid Password")
+	}
+	token, err := utils.GenerateToken(result.Email, result.Role, db.Constants.JWT_SECRET)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+
+}
+
 //Search for User using mailid / phone
 
 func GetUserById(email string) (utils.UserJson, error) {

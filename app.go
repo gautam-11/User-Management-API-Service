@@ -32,6 +32,11 @@ func routes() *chi.Mux {
 		cors.Handler,
 	)
 
+	//Root path testing
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Welcome to User management api service"))
+	})
+
 	router.Route("/v1", func(r chi.Router) {
 		r.Mount("/api/user", Routes.UserRoutes())
 	})
@@ -39,7 +44,7 @@ func routes() *chi.Mux {
 }
 
 func main() {
-	configuration, err := config.EnvPort()
+	configuration, err := config.GetEnv()
 	if err != nil {
 		log.Panicln("Configuration error", err)
 	}

@@ -10,8 +10,9 @@ import (
 )
 
 type Constants struct {
-	PORT  string
-	Mongo struct {
+	PORT       string
+	JWT_SECRET string
+	Mongo      struct {
 		URL    string
 		DBName string
 	}
@@ -23,7 +24,7 @@ type Config struct {
 	Database *mgo.Database
 }
 
-func EnvPort() (*Config, error) {
+func GetEnv() (*Config, error) {
 	config := Config{}
 	constants, err := initViper()
 	if err != nil {
