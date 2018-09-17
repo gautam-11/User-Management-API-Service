@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"user-management-api-service/internal/config"
+	"user-management-api-service/modules"
 	"user-management-api-service/utils"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -43,13 +44,13 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		tokenPart := splitted[1] //Grab the token part
 		tk := &utils.CustomClaims{}
 
-		secrets, err := config.GetEnv()
+		configuration, err := config.Connect()
 		if err != nil {
 			log.Panicln("Configuration error", err)
 			return
 		}
 		token, err := jwt.ParseWithClaims(tokenPart, tk, func(token *jwt.Token) (interface{}, error) {
-			return []byte(secrets.Constants.JWT_SECRET), nil
+			return []byte(configuration.Constants.JWT_SECRET), nil
 		})
 
 		fmt.Println(err)
@@ -63,10 +64,14 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			return
 		}
 
-		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
+		exists := modules.DoesUserExist(tk.Email, tk.Role)
+
+		if !exists {
+			respondWithError(w, http.StatusForbidden, "User with this token not found in the database")
+			return
+		}
+		//All Conditions passed
 		fmt.Println("Email ", tk.Email)
-		//ctx := context.WithValue(r.Context(), "user", tk.UserId)
-		//r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain
 	})
 }

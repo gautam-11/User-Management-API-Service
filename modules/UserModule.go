@@ -2,6 +2,7 @@ package modules
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 	"user-management-api-service/internal/config"
@@ -133,4 +134,24 @@ func UpdateUser(email string, payload *schemas.User) (string, error) {
 
 	return "Updated user successfully", nil
 
+}
+
+//Check for Existence of User based on token claims
+func DoesUserExist(email string, role string) bool {
+	db, err := config.Connect()
+	if err != nil {
+
+		log.Panicln("Configuration error", err)
+	}
+	defer db.Session.Close()
+
+	var result schemas.User
+	err = db.Database.C("users").Find(bson.M{"$and": []bson.M{bson.M{"email": email}, bson.M{"role": role}}}).One(&result)
+
+	fmt.Println("Error", err)
+	if err == nil {
+		return true
+	}
+
+	return false
 }
