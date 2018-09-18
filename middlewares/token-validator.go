@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -72,6 +73,8 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 		//All Conditions passed
 		fmt.Println("Email ", tk.Email)
+		ctx := context.WithValue(r.Context(), "role", tk.Role)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain
 	})
 }

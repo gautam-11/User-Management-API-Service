@@ -25,6 +25,7 @@ func UserRoutes() *chi.Mux {
 		token, err := modules.LoginUser(&credentials)
 		if err != nil {
 			respondWithError(w, 400, err.Error())
+			return
 		} else {
 			respondWithJSON(w, 200, token)
 		}
@@ -42,6 +43,7 @@ func UserRoutes() *chi.Mux {
 		user, err := modules.RegisterUser(&payload)
 		if err != nil {
 			respondWithError(w, 400, err.Error())
+			return
 		} else {
 			respondWithJSON(w, 200, user)
 		}
@@ -49,11 +51,17 @@ func UserRoutes() *chi.Mux {
 
 	//Handler for getting users by their mailid
 	router.Get("/getuser/{email}", func(w http.ResponseWriter, r *http.Request) {
-
+		role := r.Context().Value("role").(string)
+		CanAccess := RoleChecker(role, 1)
+		if !CanAccess {
+			respondWithError(w, 400, "You are not authorized to perform this operation")
+			return
+		}
 		userid := chi.URLParam(r, "email")
 		user, err := modules.GetUserById(userid)
 		if err != nil {
 			respondWithError(w, 400, err.Error())
+			return
 		} else {
 			respondWithJSON(w, 200, user)
 		}
@@ -61,6 +69,12 @@ func UserRoutes() *chi.Mux {
 	//Handler for fetching all users
 	router.Get("/getusers", func(w http.ResponseWriter, r *http.Request) {
 
+		role := r.Context().Value("role").(string)
+		CanAccess := RoleChecker(role, 1)
+		if !CanAccess {
+			respondWithError(w, 400, "You are not authorized to perform this operation")
+			return
+		}
 		users, err := modules.GetUsers()
 		if err != nil {
 			respondWithError(w, 400, err.Error())
@@ -70,6 +84,12 @@ func UserRoutes() *chi.Mux {
 	})
 	//Handling for deleting user using mailid
 	router.Delete("/{email}", func(w http.ResponseWriter, r *http.Request) {
+		role := r.Context().Value("role").(string)
+		CanAccess := RoleChecker(role, 3)
+		if !CanAccess {
+			respondWithError(w, 400, "You are not authorized to perform this operation")
+			return
+		}
 		userid := chi.URLParam(r, "email")
 		msg, err := modules.DeleteUser(userid)
 
@@ -80,6 +100,13 @@ func UserRoutes() *chi.Mux {
 		}
 	})
 	router.Put("/{email}", func(w http.ResponseWriter, r *http.Request) {
+
+		role := r.Context().Value("role").(string)
+		CanAccess := RoleChecker(role, 2)
+		if !CanAccess {
+			respondWithError(w, 400, "You are not authorized to perform this operation")
+			return
+		}
 
 		payload := schemas.User{}
 		json.NewDecoder(r.Body).Decode(&payload)
@@ -92,6 +119,7 @@ func UserRoutes() *chi.Mux {
 		msg, err := modules.UpdateUser(userid, &payload)
 		if err != nil {
 			respondWithError(w, 400, err.Error())
+			return
 		} else {
 			respondWithJSON(w, 200, msg)
 		}
@@ -113,4 +141,10 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 // RespondwithError return error message
 func respondWithError(w http.ResponseWriter, code int, msg string) {
 	respondWithJSON(w, code, map[string]string{"message": msg})
+}
+
+func RoleChecker(role string, crud uint8) bool {
+
+	return modules.RoleMap(role, crud)
+
 }
