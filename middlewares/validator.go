@@ -27,7 +27,7 @@ func Validate(user *schemas.User) error {
 
 }
 
-//Validate Login Credentials
+// LoginValidate -Validate Login Credentials
 func LoginValidate(user *schemas.LoginUser) error {
 
 	err := validation.Errors{

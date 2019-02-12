@@ -14,6 +14,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+// JwtAuthentication - A Middleware implementing jwt authentication validation logic
 var JwtAuthentication = func(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +46,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		tokenPart := splitted[1] //Grab the token part
 		tk := &utils.CustomClaims{}
 
-		configuration, err := config.Connect()
+		configuration, err := config.GetEnv()
 		if err != nil {
 			log.Panicln("Configuration error", err)
 			return

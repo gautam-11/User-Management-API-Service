@@ -1,5 +1,5 @@
 PORT=3000 
-JWT_SECRET="dHJpcGJvcm4jdHJhdmVsIzIwMTQ="
+JWT_SECRET="23456gbGJvcm4jdHJhdmVsIzIwMTQ="
 [Mongo]
   URL = "localhost:27017"
-  DBName = "DataX"
+  DBName = "UserService"

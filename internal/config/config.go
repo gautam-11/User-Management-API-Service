@@ -28,6 +28,7 @@ func GetEnv() (*Config, error) {
 	config := Config{}
 	constants, err := initViper()
 	if err != nil {
+
 		return nil, err
 	}
 	config.Constants = constants
@@ -67,7 +68,7 @@ func initViper() (Constants, error) {
 	})
 	viper.SetDefault("PORT", "8080")
 	if err = viper.ReadInConfig(); err != nil {
-		log.Panicf("Error reading config file, %s", err)
+		log.Printf("Error reading config file, %s", err)
 	}
 
 	var constants Constants

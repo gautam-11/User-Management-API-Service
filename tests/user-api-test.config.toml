@@ -1,0 +1,5 @@
+PORT=3000 
+JWT_SECRET="2345bgGJvcm4jdHJhdmVsIzIwMTQ="
+[Mongo]
+  URL = "localhost:27017"
+  DBName = "UserService_Test"
